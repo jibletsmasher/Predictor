@@ -151,6 +151,7 @@ namespace Predictor
             return new DateTime();
         }
 
+        // Retrieves all data points within the time range to be wittled down to points of interest later.
         public static List<DataPoint> GetDataPoints()
         {
             // Retrieving historical data:
@@ -196,6 +197,12 @@ namespace Predictor
                     var nextValues = nextLine.Split(',');
                     nextOpen = Convert.ToDouble(nextValues[index+1].Replace("\"", ""));
 
+                    // Only add a new data point if it is within the desired range.
+                    if (PointOfInterest.GetTimeStart().Ticks < date.Ticks && date.Ticks < PointOfInterest.GetTimeEnd().Ticks)
+                    {
+                        dataPoints.Add(new DataPoint(date, open, close, nextOpen));
+                    }
+
                     dateValues = nextValues[index].Split('-');
                     values = nextValues;
                     if (!PointOfInterest.isTesting)
@@ -206,12 +213,6 @@ namespace Predictor
                         {
                             values[i] = values[i].Replace("\"", "");
                         }
-                    }
-
-                    // Only add a new data point if it is within the desired range.
-                    if (PointOfInterest.GetTimeStart().Ticks < date.Ticks && date.Ticks < PointOfInterest.GetTimeEnd().Ticks)
-                    {
-                        dataPoints.Add(new DataPoint(date, open, close, nextOpen));
                     }
                 }
             }
