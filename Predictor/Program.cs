@@ -167,15 +167,21 @@ namespace Predictor
                 var line = reader.ReadLine();
                 var values = line.Split(',');
                 int index = 0;
-                var dateValues = values[PointOfInterest.isTesting ? index : ++index].Split('-');
+                string[] dateValues;
                 if (!PointOfInterest.isTesting)
                 {
+                    index = 1;
+                    dateValues = values[index].Split('-');
                     dateValues[0] = dateValues[0].Replace("\"","");
                     dateValues[2] = dateValues[2].Replace("\"", "");
                     for (int i = 0; i < values.Length; i++)
                     {
                         values[i] = values[i].Replace("\"", "");
                     }
+                }
+                else
+                {
+                    dateValues = values[index].Split('-');
                 }
 
                 while (!reader.EndOfStream)
