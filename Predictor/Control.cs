@@ -10,7 +10,7 @@ namespace Predictor
 {
     class Control
     {
-        private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\TGT max.csv";
+        private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
         public static bool isTesting = true;
         public static bool isShort = false;
         public static string GetFilePath()
@@ -48,6 +48,7 @@ namespace Predictor
                 // Read the first line.
                 reader.ReadLine();
 
+                bool additionalInfo = false;
                 int totalCount = 0;
                 int successCount = 0;
                 int failCount = 0;
@@ -60,21 +61,26 @@ namespace Predictor
 
                     // DateTime constructor (year, month, day)
                     DateTime dateStart = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
-                    Debug.WriteLine("This is start date " + dateStart.ToString());
                     long timeEnd = dateStart.Ticks + PointOfInterest.GetTimeRange().Ticks;
                     PointOfInterest.SetTimeEnd(timeEnd);
 
                     DateTime dateToSell = Program.Run(isShort);
                     if (dateToSell.Ticks == new DateTime().Ticks)
                     {
+                        // There was no dateToSell determined.
                         continue;
                     }
                     // Remove hours, minutes, and seconds from date information
                     dateToSell = new DateTime(dateToSell.Year, dateToSell.Month, dateToSell.Day);
-                    if (dateToSell.Ticks < timeEnd || dateToSell.Ticks > (timeEnd + new TimeSpan(182, 0, 0, 0, 0).Ticks))
+                    if (dateToSell.Ticks < timeEnd)
                     {
-                        Debug.WriteLine(new DateTime(timeEnd).ToString() + " " + dateToSell.ToString());
-                        return;
+                        // The dateToSell is before the "present" day or it is too far out in the future.
+                        // TODO: run tests to determine what is actually "too far" in the future.  Currently at 6 months.
+                        continue;
+                    }
+                    else if (dateToSell.Ticks > (timeEnd + new TimeSpan(182, 0, 0, 0, 0).Ticks))
+                    {
+                        additionalInfo = true;
                     }
 
                     // Get the date that you should buy the stock (i.e. "today")
@@ -92,7 +98,7 @@ namespace Predictor
                             dateCheck = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
                         }
                     }
-
+                    // Get the price of the buy day
                     double lowPrice = Convert.ToDouble(values[1]);
 
                     // Get the date you should sell
@@ -110,7 +116,7 @@ namespace Predictor
                             // DateTime constructor (year, month, day)
                             dateCheck = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
                         }
-
+                        // Get the price of the sell day
                         double highPrice = Convert.ToDouble(values[1]);
                         if (lowPrice < highPrice)
                         {
@@ -127,6 +133,11 @@ namespace Predictor
                             totalCount++;
                             failCount++;
                             gain += (highPrice - lowPrice);
+                        }
+                        if (additionalInfo)
+                        {
+                            Debug.WriteLine("See above period of time prices for a holding range of: " + new DateTime(dateToSell.Ticks - timeEnd).Ticks/TimeSpan.TicksPerDay);
+                            additionalInfo = false;
                         }
                     }
                 }
