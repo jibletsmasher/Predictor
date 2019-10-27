@@ -1,6 +1,0 @@
-C:\Projects\Predictor\Predictor\Predictor\bin\Debug\Predictor.exe.config
-C:\Projects\Predictor\Predictor\Predictor\bin\Debug\Predictor.exe
-C:\Projects\Predictor\Predictor\Predictor\bin\Debug\Predictor.pdb
-C:\Projects\Predictor\Predictor\Predictor\obj\Debug\Predictor.exe
-C:\Projects\Predictor\Predictor\Predictor\obj\Debug\Predictor.pdb
-C:\Projects\Predictor\Predictor\Predictor\obj\Debug\Predictor.csprojResolveAssemblyReference.cache
