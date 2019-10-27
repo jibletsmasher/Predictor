@@ -1,0 +1,5 @@
+C:\Projects\Predictor\Predictor\Predictor\bin\Release\Predictor.exe.config
+C:\Projects\Predictor\Predictor\Predictor\bin\Release\Predictor.exe
+C:\Projects\Predictor\Predictor\Predictor\bin\Release\Predictor.pdb
+C:\Projects\Predictor\Predictor\Predictor\obj\Release\Predictor.exe
+C:\Projects\Predictor\Predictor\Predictor\obj\Release\Predictor.pdb
