@@ -13,6 +13,7 @@ namespace Predictor
         private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
         public static bool isTesting = true;
         public static bool isShort = false;
+        public static int maxDaysToHold = 365;
         public static string GetFilePath()
         {
             //return @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
@@ -30,7 +31,7 @@ namespace Predictor
                 {
                     continue;
                 }
-                else if (dateToSell.Ticks < DateTime.Now.Ticks || dateToSell.Ticks > (DateTime.Now.Ticks + new TimeSpan(182, 0, 0, 0, 0).Ticks))
+                else if (dateToSell.Ticks < DateTime.Now.Ticks || dateToSell.Ticks > (DateTime.Now.Ticks + new TimeSpan(maxDaysToHold, 0, 0, 0, 0).Ticks))
                 {
 
                 }
@@ -78,9 +79,10 @@ namespace Predictor
                         // TODO: run tests to determine what is actually "too far" in the future.  Currently at 6 months.
                         continue;
                     }
-                    else if (dateToSell.Ticks > (timeEnd + new TimeSpan(182, 0, 0, 0, 0).Ticks))
+                    else if (dateToSell.Ticks > (timeEnd + new TimeSpan(maxDaysToHold, 0, 0, 0, 0).Ticks))
                     {
                         additionalInfo = true;
+                        continue;
                     }
 
                     // Get the date that you should buy the stock (i.e. "today")
