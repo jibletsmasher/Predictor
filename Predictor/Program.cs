@@ -191,7 +191,7 @@ namespace Predictor
                     DateTime date = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
 
                     open = Convert.ToDouble(values[index+1]);
-                    close = Convert.ToDouble(values[index+3]);
+                    close = Convert.ToDouble(values[index+4]);
 
                     var nextLine = reader.ReadLine();
                     var nextValues = nextLine.Split(',');
