@@ -1,3 +1,6 @@
 *.csv
 *.exe
 *.pdb
+*.config
+*.manifest
+*.cache
