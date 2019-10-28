@@ -52,6 +52,7 @@ namespace Predictor
                 // Read the first line.
                 reader.ReadLine();
 
+                double totalSuccessDays = 0,totalFailureDays = 0;
                 bool additionalInfo = false;
                 int totalCount = 0;
                 int successCount = 0;
@@ -127,6 +128,7 @@ namespace Predictor
                         {
                             // Fuck yes
                             Debug.WriteLine("Fuck Yes low price: " + lowPrice.ToString() + ".  High price " + highPrice.ToString());
+                            totalSuccessDays += (dateToSell.Ticks - timeEnd) / TimeSpan.TicksPerDay;
                             totalCount++;
                             successCount++;
                             gain += (highPrice - lowPrice);
@@ -135,6 +137,7 @@ namespace Predictor
                         {
                             // NOOOO
                             Debug.WriteLine("NOOOOOO low price: " + lowPrice.ToString() + ".  High price " + highPrice.ToString());
+                            totalFailureDays += (dateToSell.Ticks - timeEnd) / TimeSpan.TicksPerDay;
                             totalCount++;
                             failCount++;
                             gain += (highPrice - lowPrice);
@@ -147,6 +150,8 @@ namespace Predictor
                     }
                 }
                 Debug.WriteLine("Success: " + successCount + ".  Total: " + totalCount + ". Gain: " + gain);
+                Debug.WriteLine("Average days for success: " + (totalSuccessDays / successCount).ToString());
+                Debug.WriteLine("Average days for failure: " + (totalFailureDays / failCount).ToString());
             }
         }
     }
