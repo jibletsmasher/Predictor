@@ -84,7 +84,7 @@ namespace Predictor
                     }
                     else if (dateToSell.Ticks > (timeEnd + new TimeSpan(maxDaysToHold, 0, 0, 0, 0).Ticks) || dateToSell.Ticks < (timeEnd + new TimeSpan(minDaysToHold, 0, 0, 0, 0).Ticks))
                     {
-                        additionalInfo = true;
+                        //additionalInfo = true;
                         continue;
                     }
 
