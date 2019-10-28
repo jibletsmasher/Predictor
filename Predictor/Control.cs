@@ -52,7 +52,6 @@ namespace Predictor
                 // Read the first line.
                 reader.ReadLine();
 
-                double fourDayGain = 0, losingGain = 0;
                 double totalSuccessDays = 0,totalFailureDays = 0;
                 bool additionalInfo = false;
                 int totalCount = 0;
@@ -142,17 +141,6 @@ namespace Predictor
                             totalCount++;
                             failCount++;
                             gain += (highPrice - lowPrice);
-                            losingGain += highPrice - lowPrice;
-
-                            int counter = 0;
-                            while (!secondReader.EndOfStream && counter++ < 4)
-                            {
-                                line = secondReader.ReadLine();
-                                values = line.Split(',');
-                            }
-                            double highPrice2 = Convert.ToDouble(values[1]);
-                            Debug.WriteLine("YYYAAAAAAYYYYY");
-                            fourDayGain += highPrice2 - lowPrice;
                         }
                         if (additionalInfo)
                         {
@@ -164,8 +152,6 @@ namespace Predictor
                 Debug.WriteLine("Success: " + successCount + ".  Total: " + totalCount + ". Gain: " + gain);
                 Debug.WriteLine("Average days for success: " + (totalSuccessDays / successCount).ToString());
                 Debug.WriteLine("Average days for failure: " + (totalFailureDays / failCount).ToString());
-                Debug.WriteLine("Losing Gain: " + losingGain);
-                Debug.WriteLine("Four Day Gain: " + fourDayGain);
             }
         }
     }
