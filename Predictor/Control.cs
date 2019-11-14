@@ -10,6 +10,7 @@ namespace Predictor
 {
     class Control
     {
+        // Get crypto csv historical data: https://coinmetrics.io/data-downloads/
         private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\AEO max.csv";
         public static bool isTesting = false;
         public static bool isShort = false;
