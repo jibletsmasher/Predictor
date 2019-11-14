@@ -14,8 +14,8 @@ namespace Predictor
         private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\AEO max.csv";
         public static bool isTesting = false;
         public static bool isShort = false;
-        public static int maxDaysToHold = 90;
-        public static int minDaysToHold = 5;
+        public static int maxDaysToHold = 50;
+        public static int minDaysToHold = 32;
         public static string GetFilePath()
         {
             //return @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
@@ -35,9 +35,7 @@ namespace Predictor
                 }
                 else if (dateToSell.Ticks < DateTime.Now.Ticks ||
                     dateToSell.Ticks > (DateTime.Now.Ticks + new TimeSpan(maxDaysToHold, 0, 0, 0, 0).Ticks) ||
-                    dateToSell.Ticks < (DateTime.Now.Ticks + new TimeSpan(minDaysToHold, 0, 0, 0, 0).Ticks) ||
-                        dateToSell.Ticks > (DateTime.Now.Ticks + new TimeSpan(38, 0, 0, 0, 0).Ticks) ||
-                        dateToSell.Ticks < (DateTime.Now.Ticks + new TimeSpan(30, 0, 0, 0, 0).Ticks))
+                    dateToSell.Ticks < (DateTime.Now.Ticks + new TimeSpan(minDaysToHold, 0, 0, 0, 0).Ticks))
                 {
 
                 }
