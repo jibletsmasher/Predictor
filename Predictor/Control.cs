@@ -15,8 +15,8 @@ namespace Predictor
         public static bool isTesting = false;
         public static bool isShort = false;
         public static bool isCrypto = true;
-        public static int maxDaysToHold = 50;
-        public static int minDaysToHold = 32;
+        public static int maxDaysToHold = 90; // 50 for real data
+        public static int minDaysToHold = 32; // 32 for real data
         public static string GetFilePath()
         {
             //return @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
