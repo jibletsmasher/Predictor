@@ -60,6 +60,7 @@ namespace Predictor
                 int successCount = 0;
                 int failCount = 0;
                 double gain = 0;
+                int index = Control.isCrypto ? 18 : 1;
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
@@ -107,7 +108,7 @@ namespace Predictor
                         }
                     }
                     // Get the price of the buy day
-                    double lowPrice = Convert.ToDouble(values[1]);
+                    double lowPrice = Convert.ToDouble(values[index]);
 
                     // Get the date you should sell
                     using (var secondReader = new StreamReader(GetFilePath()))
@@ -125,7 +126,7 @@ namespace Predictor
                             dateCheck = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
                         }
                         // Get the price of the sell day
-                        double highPrice = Convert.ToDouble(values[1]);
+                        double highPrice = Convert.ToDouble(values[index]);
                         if (lowPrice < highPrice)
                         {
                             // Fuck yes

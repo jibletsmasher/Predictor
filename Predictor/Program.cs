@@ -171,24 +171,28 @@ namespace Predictor
 
                 // Read the first line.
                 reader.ReadLine();
-                var line = reader.ReadLine();
-                var values = line.Split(',');
+                var previousLine = reader.ReadLine();
+                var previousValues = previousLine.Split(',');
+                var currentLine = reader.ReadLine();
+                var currentValues = currentLine.Split(',');
+
                 int index = 0;
+                int offset = PointOfInterest.isCrypto ? 18 : 4; // stocks close value is index 4, while crypo's usd price value is index 18
                 string[] dateValues;
                 if (!PointOfInterest.isTesting)
                 {
                     index = 1;
-                    dateValues = values[index].Split('-');
+                    dateValues = currentValues[index].Split('-');
                     dateValues[0] = dateValues[0].Replace("\"","");
                     dateValues[2] = dateValues[2].Replace("\"", "");
-                    for (int i = 0; i < values.Length; i++)
+                    for (int i = 0; i < currentValues.Length; i++)
                     {
-                        values[i] = values[i].Replace("\"", "");
+                        currentValues[i] = currentValues[i].Replace("\"", "");
                     }
                 }
                 else
                 {
-                    dateValues = values[index].Split('-');
+                    dateValues = currentValues[index].Split('-');
                 }
 
                 while (!reader.EndOfStream)
@@ -196,12 +200,12 @@ namespace Predictor
                     // DateTime constructor (year, month, day)
                     DateTime date = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
 
-                    previousValue = Convert.ToDouble(values[index+1]);
-                    currentValue = Convert.ToDouble(values[index+4]);
+                    previousValue = Convert.ToDouble(previousValues[index + offset]);
+                    currentValue = Convert.ToDouble(currentValues[index + offset]);
 
                     var nextLine = reader.ReadLine();
                     var nextValues = nextLine.Split(',');
-                    nextValue = Convert.ToDouble(nextValues[index+1].Replace("\"", ""));
+                    nextValue = Convert.ToDouble(nextValues[index + offset].Replace("\"", ""));
 
                     // Only add a new data point if it is within the desired range.
                     if (PointOfInterest.GetTimeStart().Ticks < date.Ticks && date.Ticks < PointOfInterest.GetTimeEnd().Ticks)
@@ -210,14 +214,15 @@ namespace Predictor
                     }
 
                     dateValues = nextValues[index].Split('-');
-                    values = nextValues;
+                    previousValues = currentValues;
+                    currentValues = nextValues;
                     if (!PointOfInterest.isTesting)
                     {
                         dateValues[0] = dateValues[0].Replace("\"", "");
                         dateValues[2] = dateValues[2].Replace("\"", "");
-                        for (int i=0; i < values.Length; i++)
+                        for (int i=0; i < currentValues.Length; i++)
                         {
-                            values[i] = values[i].Replace("\"", "");
+                            currentValues[i] = currentValues[i].Replace("\"", "");
                         }
                     }
                 }
