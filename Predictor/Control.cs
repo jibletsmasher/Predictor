@@ -10,10 +10,11 @@ namespace Predictor
 {
     class Control
     {
-        // Get crypto csv historical data: https://coinmetrics.io/data-downloads/
+        // Get crypto csv historical data: https://coinmetrics.io/data-downloads/  PriceUSD is 19th column
         private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\AEO max.csv";
         public static bool isTesting = false;
         public static bool isShort = false;
+        public static bool isCrypto = true;
         public static int maxDaysToHold = 50;
         public static int minDaysToHold = 32;
         public static string GetFilePath()

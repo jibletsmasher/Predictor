@@ -13,16 +13,20 @@ namespace Predictor
     struct DataPoint
     {
         public DateTime date;
-        public double open;
-        public double close;
-        public double nextOpen;
+        // For stocks:
+        //  previousValue - open
+        //  currentValue - close
+        //  nextValue - next open
+        public double previousValue;
+        public double currentValue;
+        public double nextValue;
 
-        public DataPoint(DateTime date, double open, double close, double nextOpen)
+        public DataPoint(DateTime date, double previousValue, double currentValue, double nextValue)
         {
             this.date = date;
-            this.open = open;
-            this.close = close;
-            this.nextOpen = nextOpen;
+            this.previousValue = previousValue;
+            this.currentValue = currentValue;
+            this.nextValue = nextValue;
         }
     }
 
@@ -30,6 +34,7 @@ namespace Predictor
     {
         public static bool isShort;
         public static bool isTesting;
+        public static bool isCrypto;
         private static DateTime timeEnd = isTesting ? new DateTime(2005, 3, 1) : DateTime.Now;
         private static TimeSpan timeRange = new TimeSpan(90, 0, 0, 0);
         private static DateTime timeStart = new DateTime(timeEnd.Ticks - timeRange.Ticks);
@@ -89,6 +94,7 @@ namespace Predictor
         {
             PointOfInterest.isTesting = Control.isTesting;
             PointOfInterest.isShort = Control.isShort;
+            PointOfInterest.isCrypto = Control.isCrypto;
             if (PointOfInterest.isTesting)
             {
                 Control.Test(PointOfInterest.isShort);
@@ -159,9 +165,9 @@ namespace Predictor
             List<DataPoint> dataPoints = new List<DataPoint>();
             using (var reader = new StreamReader(Control.GetFilePath()))
             {
-                double nextOpen = 0;
-                double open = 0;
-                double close = 0;
+                double nextValue = 0;
+                double previousValue = 0;
+                double currentValue = 0;
 
                 // Read the first line.
                 reader.ReadLine();
@@ -190,17 +196,17 @@ namespace Predictor
                     // DateTime constructor (year, month, day)
                     DateTime date = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
 
-                    open = Convert.ToDouble(values[index+1]);
-                    close = Convert.ToDouble(values[index+4]);
+                    previousValue = Convert.ToDouble(values[index+1]);
+                    currentValue = Convert.ToDouble(values[index+4]);
 
                     var nextLine = reader.ReadLine();
                     var nextValues = nextLine.Split(',');
-                    nextOpen = Convert.ToDouble(nextValues[index+1].Replace("\"", ""));
+                    nextValue = Convert.ToDouble(nextValues[index+1].Replace("\"", ""));
 
                     // Only add a new data point if it is within the desired range.
                     if (PointOfInterest.GetTimeStart().Ticks < date.Ticks && date.Ticks < PointOfInterest.GetTimeEnd().Ticks)
                     {
-                        dataPoints.Add(new DataPoint(date, open, close, nextOpen));
+                        dataPoints.Add(new DataPoint(date, previousValue, currentValue, nextValue));
                     }
 
                     dateValues = nextValues[index].Split('-');
@@ -227,9 +233,9 @@ namespace Predictor
             List<PointOfInterest> lowValues = new List<PointOfInterest>();
             foreach (DataPoint dataPoint in dataPoints)
             {
-                double currentValue = dataPoint.close;
-                double previousValue = dataPoint.open;
-                double nextValue = dataPoint.nextOpen;
+                double currentValue = dataPoint.currentValue;
+                double previousValue = dataPoint.previousValue;
+                double nextValue = dataPoint.nextValue;
 
                 // Only calculating rise because run will always be 1
                 double previousValueSlope = currentValue - previousValue;
