@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,23 +12,58 @@ namespace Predictor
     class Control
     {
         // Get crypto csv historical data: https://coinmetrics.io/data-downloads/  PriceUSD is 19th column
-        private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\AEO max.csv";
+        // This file path is dynamic when actually running the code (do a ctrl+f to see how)
+        private static string filePath = @"C:\Projects\Predictor\Predictor\Predictor\ada.csv"; // For crypto
+        private static string testFileName = "GS.csv";
         public static bool isTesting = false;
         public static bool isShort = false;
-        public static bool isCrypto = true;
-        public static int maxDaysToHold = 90; // 50 for real data
+        public static bool isCrypto = false;
+
+        public static StreamWriter logWriter = null;
+
+        public static int maxDaysToHold = 40; // 50 for real data <- I don't know why we should only hold for 50 days for real data
         public static int minDaysToHold = 32; // 32 for real data
         public static string GetFilePath()
         {
-            //return @"C:\Projects\Predictor\Predictor\Predictor\GS.csv";
-            return filePath;
+            if (!Control.isTesting)
+            {
+                return filePath;
+            }
+            else
+            {
+                return $"C:\\Projects\\Predictor\\Predictor\\Predictor\\{testFileName}";
+            }
+        }
+
+        public static void SetupLogWriter()
+        {
+            if (logWriter == null)
+            {
+                // Setup log file
+                string processFolder = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+                var culture = CultureInfo.CreateSpecificCulture("en-US");
+                DirectoryInfo directory = Directory.CreateDirectory(processFolder + "\\LogFiles");
+                string shortLong = Control.isShort ? "short" : "long";
+                string testing = Control.isTesting ? $"-testing-{testFileName}" : "";
+                string pathPlacehodler = directory.FullName + "\\" + DateTime.Now.Date.ToString("d", culture).Replace('/', '-') + "-" + shortLong + testing + ".txt";
+                logWriter = new StreamWriter(pathPlacehodler, false);
+            }
+        }
+
+        public static void CloseLogWriter()
+        {
+            logWriter.Close();
         }
 
         public static void Run(bool isShort)
         {
+            SetupLogWriter();
+
+            List<string> tickersToBuy = new List<string>();
             string[] files = Directory.GetFiles(@"C:\Projects\Predictor\Symbols");
             for (int i=0; i < files.Length; i++)
             {
+                if (files[i].Contains(".RData") || files[i].Contains(".Rhistory")) continue;
                 filePath = files[i];
                 DateTime dateToSell = Program.Run(isShort);
                 if (dateToSell.Ticks == new DateTime().Ticks)
@@ -42,13 +78,23 @@ namespace Predictor
                 }
                 else
                 {
-                    Debug.WriteLine("Buy " + files[i] + " now!  Sell on " + dateToSell.ToString());
+                    var fileParts = files[i].Split(new char[] { '\\' });
+                    var ticker = fileParts[4].Split(new char[] { ' ' })[0];
+                    tickersToBuy.Add(ticker);
+                    var info = "Buy " + files[i] + " now!  Sell on " + dateToSell.ToString();
+                    Debug.WriteLine(info);
+                    logWriter.WriteLine(info);
                 }
+            }
+            foreach(var ticker in tickersToBuy)
+            {
+                logWriter.Write($"\"{ticker}\",");
             }
         }
 
         public static void Test(bool isShort)
         {
+            SetupLogWriter();
             using (var reader = new StreamReader(GetFilePath()))
             {
                 // Read the first line.
@@ -60,6 +106,7 @@ namespace Predictor
                 int successCount = 0;
                 int failCount = 0;
                 double gain = 0;
+                double funds = 1d;
                 int index = Control.isCrypto ? 18 : 1;
                 while (!reader.EndOfStream)
                 {
@@ -107,8 +154,10 @@ namespace Predictor
                             dateCheck = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
                         }
                     }
+
+                    DateTime buyDate = new DateTime(dateCheck.Ticks);
                     // Get the price of the buy day
-                    double lowPrice = Convert.ToDouble(values[index]);
+                    double buyPrice = Convert.ToDouble(values[index]);
 
                     // Get the date you should sell
                     using (var secondReader = new StreamReader(GetFilePath()))
@@ -126,25 +175,31 @@ namespace Predictor
                             dateCheck = new DateTime(Convert.ToInt16(dateValues[0]), Convert.ToInt16(dateValues[1]), Convert.ToInt16(dateValues[2]));
                         }
                         // Get the price of the sell day
-                        double highPrice = Convert.ToDouble(values[index]);
-                        if (lowPrice < highPrice)
+                        double sellPrice = Convert.ToDouble(values[index]);
+                        if (buyPrice < sellPrice)
                         {
                             // Fuck yes
-                            Debug.WriteLine("Fuck Yes low price: " + lowPrice.ToString() + ".  High price " + highPrice.ToString());
+                            Debug.WriteLine("Fuck Yes buy price: " + buyPrice.ToString() + ".  Sell price " + sellPrice.ToString());
+                            logWriter.WriteLine("Fuck Yes buy price: " + buyPrice.ToString() + ".  Sell price " + sellPrice.ToString() + "  Sell Date: " + dateToSell.ToString("MM/dd/yyyy"));
                             totalSuccessDays += (dateToSell.Ticks - timeEnd) / TimeSpan.TicksPerDay;
                             totalCount++;
                             successCount++;
-                            gain += (highPrice - lowPrice);
+                            
+                            gain += (sellPrice - buyPrice);
                         }
-                        else if (lowPrice > highPrice)
+                        else if (buyPrice > sellPrice)
                         {
                             // NOOOO
-                            Debug.WriteLine("NOOOOOO low price: " + lowPrice.ToString() + ".  High price " + highPrice.ToString());
+                            Debug.WriteLine("NOOOOOO buy price: " + buyPrice.ToString() + ".  Sell price " + sellPrice.ToString());
+                            logWriter.WriteLine("NOOOOOO buy price: " + buyPrice.ToString() + ".  Sell price " + sellPrice.ToString() + ";  Buy Date: " + buyDate.ToString("MM/dd/yyyy") + ";  Sell Date: " + dateToSell.ToString("MM/dd/yyyy"));
                             totalFailureDays += (dateToSell.Ticks - timeEnd) / TimeSpan.TicksPerDay;
                             totalCount++;
                             failCount++;
-                            gain += (highPrice - lowPrice);
+                            gain += (sellPrice - buyPrice);
                         }
+                        var numOfShares = funds / buyPrice;
+                        if (buyPrice - buyPrice * .05 > sellPrice) sellPrice = buyPrice - buyPrice * 0.05;
+                        funds = numOfShares * sellPrice;
                         if (additionalInfo)
                         {
                             Debug.WriteLine("See above period of time prices for a holding range of: " + new DateTime(dateToSell.Ticks - timeEnd).Ticks/TimeSpan.TicksPerDay);
@@ -152,9 +207,17 @@ namespace Predictor
                         }
                     }
                 }
-                Debug.WriteLine("Success: " + successCount + ".  Total: " + totalCount + ". Gain: " + gain);
-                Debug.WriteLine("Average days for success: " + (totalSuccessDays / successCount).ToString());
-                Debug.WriteLine("Average days for failure: " + (totalFailureDays / failCount).ToString());
+                var infos = new string[] {
+                    "Success: " + successCount + ".  Total: " + totalCount + ". Gain: " + gain,
+                    "Average days for success: " + (totalSuccessDays / successCount).ToString(),
+                    "Average days for failure: " + (totalFailureDays / failCount).ToString(),
+                    "Total funds leftover: " + funds.ToString()
+                };
+                foreach (var info in infos)
+                {
+                    Debug.WriteLine(info);
+                    logWriter.WriteLine(info);
+                }
             }
         }
     }

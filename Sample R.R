@@ -1,10 +1,30 @@
+# To run this file, select all (CTRL+a), then CTRL+Enter
+# Had to reinstall this for things to work
+#install.packages('quantmod', type="source")
+
 library(quantmod)
 library(MASS)
 
-#https://old.nasdaq.com/screening/companies-by-name.aspx?letter=0&exchange=nasdaq&render=download
-#this is a download of all of the symbols and the associated companies
+# Use this line to test to ensure the quantmod package is working
+displaySymbols <- c("WLDS", "YTRA")
+print(displaySymbols)
+#for(displaySymbol in displaySymbols)
+#{
+  symbols <- getSymbols(Symbols = displaySymbols, src="yahoo", from=(as.Date(as.POSIXlt(Sys.time()))-360), auto.assign=TRUE)
+  chartSeries(symbols)
+#}
+
 setwd("C:/Projects/Predictor")
-allSymbols <- read.csv(file="companylist.csv",header=TRUE,sep=",")
+# Get list of symbols from https://raw.githubusercontent.com/datasets/nasdaq-listings/refs/heads/main/data/nasdaq-listed.csv
+# when updating the list, go to notepad++ and do a find replace regular expression for:
+#   - find: ([A-Z]+),([^ ])
+#   - replace: \"\1\",\2
+# Then fix the columns names, so they are correct csv format
+# ^ this is to get quotes around all of the symbol tickers and is needed
+# do a find replace regular expression for:
+# 
+#this is a download of all of the symbols and the associated companies
+allSymbols <- read.csv(file="companylistv2.csv",header=TRUE,sep=",")
 setwd("C:/Projects/Predictor/Symbols")
 for(row in 1:nrow(allSymbols))
 {
@@ -38,3 +58,4 @@ for(row in 1:nrow(allSymbols))
 		message()
 	})
 }
+
