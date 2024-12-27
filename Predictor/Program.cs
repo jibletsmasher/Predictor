@@ -92,9 +92,11 @@ namespace Predictor
 
         static void Main(string[] args)
         {
+            //GetWebPageSource();
             PointOfInterest.isTesting = Control.isTesting;
             PointOfInterest.isShort = Control.isShort;
             PointOfInterest.isCrypto = Control.isCrypto;
+            Control.SetupLogWriter();
             if (PointOfInterest.isTesting)
             {
                 Control.Test(PointOfInterest.isShort);
@@ -103,6 +105,7 @@ namespace Predictor
             {
                 Control.Run(PointOfInterest.isShort);
             }
+            Control.CloseLogWriter();
         }
 
         public static DateTime Run(bool isShort)
@@ -136,6 +139,10 @@ namespace Predictor
                 //Debug.WriteLine("Best fit " + ((!isShort && highBestFit.slope > 0) ? "high slope is greater than 0." : "low slope is less than 0."));
                 return new DateTime();
             }
+            //else if (!isShort && lowBestFit.slope > -.2 && lowBestFit.slope < .2)
+            //{
+            //    return new DateTime();
+            //}
 
             // If we're in a short position and expect a decrease, then we want to find the date to sell.
             // Likewise, if we're in a long position and expect an increase, then we want to find the date to sell.
@@ -177,7 +184,7 @@ namespace Predictor
                 var currentValues = currentLine.Split(',');
 
                 int index = 0;
-                int offset = PointOfInterest.isCrypto ? 18 : 4; // stocks close value is index 4, while crypo's usd price value is index 18
+                int offset = PointOfInterest.isCrypto ? 18 : 4; // stocks close value is index 4, while crypto's usd price value is index 18 (this changes for every cyrpto file)
                 string[] dateValues;
                 if (!PointOfInterest.isTesting)
                 {
@@ -188,6 +195,7 @@ namespace Predictor
                     for (int i = 0; i < currentValues.Length; i++)
                     {
                         currentValues[i] = currentValues[i].Replace("\"", "");
+                        previousValues[i] = previousValues[i].Replace("\"", "");
                     }
                 }
                 else
@@ -301,34 +309,40 @@ namespace Predictor
             return new BestFitLine(slope, yIntercept);
         }
 
-        //public static string GetWebPageSource(string url1, string url2)
-        //{
-        //    HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url1);
-        //    webrequest.Method = "GET";
-        //    webrequest.ContentType = "application/x-www-form-urlencoded";
-        //    HttpWebResponse webresponse = (HttpWebResponse)webrequest.GetResponse();
+        public static string GetWebPageSource()
+        {
+            Uri uri = new Uri("https://coinmarketcap.com/currencies/ethereum/historical-data/");
+            HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(uri);
+            myRequest.Method = "GET";
+            WebResponse myResponse = myRequest.GetResponse();
+            StreamReader sr = new StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
+            string result = sr.ReadToEnd();
+            sr.Close();
+            myResponse.Close();
 
-        //    HttpWebRequest webrequest2 = (HttpWebRequest)WebRequest.Create(url2);
-        //    webrequest2.Method = "GET";
-        //    webrequest2.ContentType = "application/x-www-form-urlencoded";
-        //    Uri uri = new Uri("https://query1.finance.yahoo.com");
-        //    webrequest2.CookieContainer = new CookieContainer(10);
-        //    webrequest2.CookieContainer.Add(new Cookie("APID", "VBd920f336-807c-11e7-8e66-063fe2e383df", "/", ".yahoo.com"));
-        //    webrequest2.CookieContainer.Add(new Cookie("APIDTS", "1572149281", "/", ".yahoo.com"));
-        //    webrequest2.CookieContainer.Add(new Cookie("B", "fd65bo5cjqqi4&b=3&s=qk", "/", ".yahoo.com"));
-        //    webrequest2.CookieContainer.Add(new Cookie("PRF", "t%3DGS", "/", ".finance.yahoo.com"));
-        //    webrequest2.CookieContainer.Add(new Cookie("thamba", "2", "/quote/GS", ".finance.yahoo.com"));
-        //    HttpWebResponse webresponse2 = (HttpWebResponse)webrequest2.GetResponse();
+            return result;
+
+            HttpWebRequest webrequest2 = (HttpWebRequest)WebRequest.Create("");
+            webrequest2.Method = "GET";
+            webrequest2.ContentType = "application/x-www-form-urlencoded";
+            //Uri uri = new Uri("https://query1.finance.yahoo.com");
+            webrequest2.CookieContainer = new CookieContainer(10);
+            webrequest2.CookieContainer.Add(new Cookie("APID", "VBd920f336-807c-11e7-8e66-063fe2e383df", "/", ".yahoo.com"));
+            webrequest2.CookieContainer.Add(new Cookie("APIDTS", "1572149281", "/", ".yahoo.com"));
+            webrequest2.CookieContainer.Add(new Cookie("B", "fd65bo5cjqqi4&b=3&s=qk", "/", ".yahoo.com"));
+            webrequest2.CookieContainer.Add(new Cookie("PRF", "t%3DGS", "/", ".finance.yahoo.com"));
+            webrequest2.CookieContainer.Add(new Cookie("thamba", "2", "/quote/GS", ".finance.yahoo.com"));
+            HttpWebResponse webresponse2 = (HttpWebResponse)webrequest2.GetResponse();
 
 
-        //    Encoding enc = Encoding.GetEncoding("utf-8");
-        //    StreamReader responseStream = new StreamReader(webresponse2.GetResponseStream(), enc);
-        //    string result = string.Empty;
-        //    result = responseStream.ReadToEnd();
-        //    webresponse.Close();
-        //    webresponse2.Close();
-        //    return result;
-        //}
+            Encoding enc = Encoding.GetEncoding("utf-8");
+            StreamReader responseStream = new StreamReader(webresponse2.GetResponseStream(), enc);
+            //string result = string.Empty;
+            result = responseStream.ReadToEnd();
+            //webresponse.Close();
+            webresponse2.Close();
+            return result;
+        }
 
         //public static string[,] GetSymbolData(string webpageSource)
         //{
